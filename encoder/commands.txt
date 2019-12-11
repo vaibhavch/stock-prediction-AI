@@ -1,0 +1,19 @@
+for filename in data/*.csv; do
+    python main.py --train -q "$filename"
+done
+
+ls -S data/*.csv | head -200 | parallel -j70 -I% --max-args 1 python main.py --train -q %
+
+ITER=0
+for filename in trainer_files/*.csv; do
+    python main.py --train -s "$ITER" -f "$filename"
+    echo "$ITER" "Symbols Completed"
+    ITER=$(expr $ITER + 1)
+done
+
+
+python main.py --train -f top1.txt
+
+sudo python setup.py install --libcapnp-url https://github.com/vaibhavch/capnproto-mod/raw/master/capnproto-c++-0.6.1.tar --force-bundled-libcapnp
+
+sed '1,25000d' all1.csv > all2.csv
